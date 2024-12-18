@@ -34,5 +34,31 @@ router.get('/', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+router.put('/:id', upload.single('image'), async (req, res) => {
+  const { id } = req.params;
+  const { categoryName, categoryDescription } = req.body;
+  const imagePath = req.file ? req.file.path : null;
+
+  try {
+    // Find the category by ID
+    const category = await Category.findById(id);
+    if (!category) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
+    // Update the category fields
+    category.Name = categoryName || category.Name;
+    category.Description = categoryDescription || category.Description;
+    if (imagePath) {
+      category.Image = imagePath;
+    }
+
+    // Save the updated category
+    await category.save();
+    res.status(200).json(category);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 module.exports = router;
